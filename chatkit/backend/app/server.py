@@ -6,12 +6,10 @@ import logging
 from typing import Any, AsyncIterator
 
 from agents import Runner
-from chatkit.agents import stream_agent_response
+from chatkit.agents import simple_to_agent_input, stream_agent_response
 from chatkit.server import ChatKitServer
 from chatkit.types import (
     Action,
-    Attachment,
-    StreamOptions,
     WidgetItem,
     ThreadMetadata,
     ThreadStreamEvent,
@@ -20,7 +18,6 @@ from chatkit.types import (
 
 from .assistant import StarterAgentContext, assistant_agent
 from .memory_store import MemoryStore
-from .thread_item_converter import BasicThreadItemConverter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,7 +27,6 @@ class StarterChatServer(ChatKitServer[dict[str, Any]]):
 
     def __init__(self) -> None:
         self.store: MemoryStore = MemoryStore()
-        self.thread_item_converter = BasicThreadItemConverter()
         super().__init__(self.store)
 
     # -- ChatKit hooks ----------------------------------------------------
@@ -59,7 +55,7 @@ class StarterChatServer(ChatKitServer[dict[str, Any]]):
             context=context,
         )
         items = list(reversed(items_page.data))
-        input_items = await self.thread_item_converter.to_agent_input(items)
+        input_items = await simple_to_agent_input(items)
 
         agent_context = StarterAgentContext(
             thread=thread,
@@ -76,12 +72,6 @@ class StarterChatServer(ChatKitServer[dict[str, Any]]):
         async for event in stream_agent_response(agent_context, result):
             yield event
         return
-
-    def get_stream_options(
-        self, thread: ThreadMetadata, context: dict[str, Any]
-    ) -> StreamOptions:
-        # Allow cancelling mid-stream; the in-memory store will keep partial history.
-        return StreamOptions(allow_cancel=True)
 
 
 def create_chatkit_server() -> StarterChatServer | None:
