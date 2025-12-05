@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 import {
   STARTER_PROMPTS,
@@ -52,6 +53,7 @@ export function ChatKitPanel({
   const processedFacts = useRef(new Set<string>());
   const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors());
   const [isInitializingSession, setIsInitializingSession] = useState(true);
+  const [hasStartedChat, setHasStartedChat] = useState(false);
   const isMountedRef = useRef(true);
   const [scriptStatus, setScriptStatus] = useState<
     "pending" | "ready" | "error"
@@ -322,6 +324,7 @@ export function ChatKitPanel({
     },
     onThreadChange: () => {
       processedFacts.current.clear();
+      setHasStartedChat(true);
     },
     onError: ({ error }: { error: unknown }) => {
       // Note that Chatkit UI handles errors for your users.
@@ -345,6 +348,20 @@ export function ChatKitPanel({
 
   return (
     <div className="relative pb-8 flex h-[90vh] w-full rounded-2xl flex-col overflow-hidden bg-white shadow-sm transition-colors dark:bg-slate-900">
+      {!blockingError && !isInitializingSession && !hasStartedChat && (
+        <div className="absolute top-4 left-0 right-0 z-10 flex justify-center pointer-events-none">
+          <div className="max-w-xl w-full px-4">
+            <Image
+              src="/icon.png"
+              alt="Workflow diagram showing the process steps"
+              width={600}
+              height={300}
+              className="rounded-lg w-full h-auto opacity-95 shadow-lg"
+              priority
+            />
+          </div>
+        </div>
+      )}
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}

@@ -7,8 +7,13 @@ export const CREATE_SESSION_ENDPOINT = "/api/create-session";
 
 export const STARTER_PROMPTS: StartScreenPrompt[] = [
   {
-    label: "What can you do?",
-    prompt: "What can you do?",
+    label: "Give me the best candidates for a Junior Consultant roles",
+    prompt: "Give me the best candidates for a Junior Consultant roles",
+    icon: "circle-question",
+  },
+  {
+    label: "Give me the best candidates for Junior Data analysts",
+    prompt: "Give me the best candidates for Junior Data analysts",
     icon: "circle-question",
   },
 ];
